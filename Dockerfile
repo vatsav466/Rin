@@ -51,6 +51,7 @@ COPY backend/utilities               /opt/ceg/algo/utilities
 COPY backend/cache_gateway           /opt/ceg/algo/cache_gateway
 COPY backend/ceg_role_master_api     /opt/ceg/algo/ceg_role_master_api
 COPY backend/vendor_ingestion_api    /opt/ceg/algo/vendor_ingestion_api
+COPY backend/Thingsboard             /opt/ceg/algo/Thingsboard
 
 RUN rm -rf /usr/share/nginx/html/*
 COPY --from=frontend-build /app/dist /usr/share/nginx/html
