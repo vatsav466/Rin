@@ -43,7 +43,7 @@ RUN pip install --upgrade pip setuptools wheel \
     && pip install -e /opt/ceg/algo/UrdhvaBase \
     && pip install -r /tmp/requirements.txt
 
-# Copy all required backend services and modules
+# Copy all application modules and configurations
 COPY backend/api_manager             /opt/ceg/algo/api_manager
 COPY backend/api_manager/.alg_env    /opt/ceg/algo/api_manager/.alg_env
 COPY backend/authenticator           /opt/ceg/algo/authenticator
@@ -53,6 +53,10 @@ COPY backend/cache_gateway           /opt/ceg/algo/cache_gateway
 COPY backend/ceg_role_master_api     /opt/ceg/algo/ceg_role_master_api
 COPY backend/vendor_ingestion_api    /opt/ceg/algo/vendor_ingestion_api
 COPY backend/Thingsboard             /opt/ceg/algo/Thingsboard
+
+# Copy environment configuration files if present in backend root
+COPY backend/.env*                   /opt/ceg/algo/ 2>/dev/null || true
+COPY backend/config*                 /opt/ceg/algo/ 2>/dev/null || true
 
 RUN rm -rf /usr/share/nginx/html/*
 COPY --from=frontend-build /app/dist /usr/share/nginx/html
