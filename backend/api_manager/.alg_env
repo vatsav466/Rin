@@ -1,0 +1,30 @@
+db_urls={"postgres_async": ["postgresql+asyncpg://13.126.249.159:5432/hpcl_ceg?user=novex&password=UUDrftkiJLPM59jD"], "redis": ["redis://localhost:6379"]}
+import_paths={"base_path": "/Users/algofusion/Documents/GitHub/dnc_backend_v2/", "api_manager": "/Users/algofusion/Documents/GitHub/dnc_backend_v2/api_manager","orchestrator":"/Users/algofusion/Documents/GitHub/dnc_backend_v2/orchestrator"}
+db_connection_mapping={"2": {"cred_model": "Databases", "cred_type": "PostgreSQL"},"3": {"cred_model": "Databases", "cred_type": "Oracle"},"1": {"cred_model": "Databases", "cred_type": "PostgreSQL"}}
+
+camunda_url = 'http://13.126.249.159:8082' 
+template_path = '/Users/algofusion/Documents/GitHub/dnc_backend_v2/orchestrator/notification_templates'
+smtp_host="smtp.gmail.com"
+smtp_port=587
+smtp_from_url="yesu.p@algofusiontech.com"
+smtp_username="yesu.p@algofusiontech.com"
+smtp_password="zxyvqesfcwekpqsz"
+smtp_tls_enabled=True
+smtp_ssl_enabled=False
+
+
+encryption_key='mcMAmuM2wLgNey7hgaCXDsaH__h13R2esSQ7fKvX3ak='
+enable_encrypted_payload=False
+#disable_api_extra_inputs=True
+minio_endpoint="http://13.126.249.159:9006"
+minio_access_key="minioadmin"
+minio_secret_key="minioadmin"
+minio_bucket="reports"
+minio_secure=False
+
+things_board_url="https://digital-twin.algofusiontech.com"
+things_board_username="admin@algofusiontech.com"
+things_board_password="Alg0Sc@daDash#70"
+
+
+aot_status_url = "http://10.90.37.178:8007/Status/api/hpcl/status"

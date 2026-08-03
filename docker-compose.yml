@@ -1,0 +1,37 @@
+##############################################################################
+# docker-compose.yml — local development / testing
+#
+# Usage:
+#   docker compose up --build
+#
+# Then open:
+#   http://localhost:5378/     — NOVEX frontend
+#   http://localhost:5378/docs — Swagger UI (proxied through nginx)
+#   http://localhost:8002/docs — FastAPI direct
+##############################################################################
+
+version: "3.9"
+
+services:
+  novex:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: novex_dev
+    ports:
+      - "5378:5378"      # nginx → frontend + proxied /api and /docs
+      - "8002:8002"      # FastAPI direct → /docs, /redoc, /openapi.json
+    environment:
+      - MODE=prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5378/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    volumes:
+      # Mount the .alg_env at runtime so secrets are never baked into the image
+      - ./backend/api_manager/.alg_env:/opt/ceg/algo/api_manager/.alg_env:ro
+      # Persist digital-twin model assets across container restarts
+      - /opt/digitaltwin_images:/opt/digitaltwin_images
