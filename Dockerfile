@@ -43,6 +43,7 @@ RUN pip install --upgrade pip setuptools wheel \
     && pip install -e /opt/ceg/algo/UrdhvaBase \
     && pip install -r /tmp/requirements.txt
 
+# Copy all required backend services and modules
 COPY backend/api_manager             /opt/ceg/algo/api_manager
 COPY backend/api_manager/.alg_env    /opt/ceg/algo/api_manager/.alg_env
 COPY backend/authenticator           /opt/ceg/algo/authenticator
