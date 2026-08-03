@@ -24,7 +24,12 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy build output from stage 1
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Use your repo's own nginx.conf (already present in your project)
+# NOTE: this repo's real nginx.conf lives at the REPO ROOT, not in frontend/.
+# If you build this Dockerfile standalone, you must first copy it in, e.g.:
+#   cp ../nginx.conf ./nginx.conf   (run from frontend/ before "docker build")
+# Prefer building the ROOT Dockerfile via docker-compose instead - it already
+# copies the correct nginx.conf and also runs the FastAPI backend, so /api and
+# /docs actually work. This standalone frontend image serves static files ONLY.
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Must match the "listen" port inside nginx.conf (5378)
