@@ -1,4 +1,4 @@
-db_urls={"postgres_async": ["postgresql+asyncpg://13.126.249.159:5432/hpcl_ceg?user=novex&password=UUDrftkiJLPM59jD"], "redis": ["redis://localhost:6379"]}
+db_urls={"postgres_async": ["postgresql+asyncpg://novex:UUDrftkiJLPM59jD@13.126.249.159:5432/hpcl_ceg"], "redis": ["redis://localhost:6379"]}
 import_paths={"base_path": "/opt/ceg/algo/", "api_manager": "/opt/ceg/algo/api_manager","orchestrator":"/opt/ceg/algo/orchestrator"}
 db_connection_mapping={"2": {"cred_model": "Databases", "cred_type": "PostgreSQL"},"3": {"cred_model": "Databases", "cred_type": "Oracle"},"1": {"cred_model": "Databases", "cred_type": "PostgreSQL"}}
 

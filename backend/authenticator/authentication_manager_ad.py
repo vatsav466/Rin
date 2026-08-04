@@ -213,8 +213,12 @@ class AuthenticationManager:
         """
 
         # Checking whether user exists in ceg local database or not, If not return Invalid else proceed further
-        user_data = await hpcl_ceg_model.Users.get_aggr_data(f"select * from users where "
-                                                             f"lower(username)='{username.lower()}'", skip_total=True)
+        try:
+            user_data = await hpcl_ceg_model.Users.get_aggr_data(f"select * from users where "
+                                                                 f"lower(username)='{username.lower()}'", skip_total=True)
+        except Exception as db_exc:
+            print(f"[login] DB query failed for user '{username}': {repr(db_exc)}")
+            return False, "Service temporarily unavailable. Please try again later.", {}
         if not user_data["data"]:
             await cls.update_login_failure_attempts(username)
             return False, "Invalid Login Credentials", {}

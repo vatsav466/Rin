@@ -265,33 +265,21 @@ class BasePostgresModel(pydantic.BaseModel):
 
     @classmethod
     async def update_by_query(cls, query, entity_id=None):
+        """Execute a DML query (UPDATE/DELETE/INSERT) and return rowcount."""
         last_exc = None
         for _attempt in range(2):  # retry once on transient DB failures
             session = await manager.get_session()
             try:
-                if limit:
-                    query_ = f"{query} LIMIT {limit} OFFSET {limit * skip}"
-                else:
-                    query_ = f"{query}"
-                if not query_.strip().upper().startswith("WITH ") and not query_.strip().upper().startswith("SELECT"):
-                    query_ = f"select {query_}"
-                result = await session.execute(text(query_))
-                resp = result.all()
-                # Getting key columns from results
-                columns = [key for key in result.keys()]
-                results = [{columns[index]: value for index, value in enumerate(row)} for row in resp]
-                # Fetching total available records for the given query
-                total = len(results)
-                if not skip_total:
-                    try:
-                        total = await session.scalar(text(f"select COUNT(*) FROM(SELECT {query}) AS subquery"))
-                    except:
-                        ...
-                results_data = {"data": results, "count": len(results), "total": total}
-                return results_data
+                result = await session.execute(text(query))
+                await session.commit()
+                return {"affected": result.rowcount}
             except Exception as e:
                 last_exc = e
-                print(f"get_aggr_data attempt {_attempt + 1} failed: {e}")
+                print(f"update_by_query attempt {_attempt + 1} failed: {repr(e)}\n{traceback.format_exc()}")
+                try:
+                    await session.rollback()
+                except Exception:
+                    pass
                 if _attempt == 0:
                     await asyncio.sleep(0.5)
             finally:
@@ -299,7 +287,7 @@ class BasePostgresModel(pydantic.BaseModel):
                     await asyncio.shield(session.close())
                 except Exception:
                     pass
-        raise Exception(f"Exception while running aggregation query {last_exc}") from last_exc
+        raise Exception(f"Exception while running update query {repr(last_exc)}") from last_exc
 
     @classmethod
     async def execute_query(cls, query):
@@ -350,7 +338,9 @@ class BasePostgresModel(pydantic.BaseModel):
                 return results_data
             except Exception as e:
                 last_exc = e
-                print(f"get_aggr_data attempt {_attempt + 1} failed: {e}")
+                # Use repr() — asyncio.TimeoutError and some asyncpg errors have
+                # empty str() in Python 3.11, hiding the real failure type.
+                print(f"get_aggr_data attempt {_attempt + 1} failed: {repr(e)}\n{traceback.format_exc()}")
                 if _attempt == 0:
                     await asyncio.sleep(0.5)
             finally:
@@ -358,7 +348,7 @@ class BasePostgresModel(pydantic.BaseModel):
                     await asyncio.shield(session.close())
                 except Exception:
                     pass
-        raise Exception(f"Exception while running aggregation query {last_exc}") from last_exc
+        raise Exception(f"Exception while running aggregation query {repr(last_exc)}") from last_exc
 
     @classmethod
     async def create_database_table(cls):
