@@ -154,6 +154,86 @@ class Settings(BaseSettings):
     debug: bool = False
     log_level: str = "info"
 
+    # ── Database / connection routing ─────────────────────────────────────────
+    # Used by utilities/connection_mapping.py to route entity DB calls.
+    db_connection_config: Dict[str, str] = {"ims": "3", "hpcl_ceg": "1", "cris": "2"}
+    db_connection_mapping: Dict[str, Any] = {
+        "1": {"cred_model": "Databases", "cred_type": "PostgreSQL"},
+        "2": {"cred_model": "Databases", "cred_type": "PostgreSQL"},
+        "3": {"cred_model": "Databases", "cred_type": "Oracle"},
+    }
+    base_path: str = "/opt/ceg/algo"
+    template_path: str = "/opt/ceg/algo/templates"
+    mft_path: str = "/var/log/ceg_sys_logs/mft"
+    ticketing_attachments: str = "/var/log/ceg_sys_logs/ticketing_attachments"
+
+    # ── Cache gateway service ──────────────────────────────────────────────────
+    cache_gateway_host: str = "localhost"
+    cache_gateway_port: int = 8010
+
+    # ── Camunda BPMN (per-workflow instance maps) ─────────────────────────────
+    camundaurl: str = "http://localhost:8082"
+    camunda_configuration: Dict[str, Any] = {}
+    camunda_default_config: Dict[str, Any] = {}
+    camunda_url_config: Dict[str, Any] = {}
+    camunda_url_va_config: Dict[str, Any] = {}
+    tas_faulty_camunda_url: str = ""
+
+    # ── RabbitMQ ───────────────────────────────────────────────────────────────
+    rabbitmq_host: str = "localhost"
+    rabbitmq_port: int = 5672
+    rabbitmq_username: str = "guest"
+    rabbitmq_password: str = "guest"
+    rabbitmq_vhost: str = "/"
+    rabbitmq_queue: str = "novex"
+    rabbitmq_auto_ack: bool = False
+    publish_to_test_queue_enabled: bool = False
+
+    # ── SMTP / email notifications ─────────────────────────────────────────────
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_url: str = ""
+    smtp_reply_url: str = ""
+    smtp_ssl_enabled: bool = False
+    smtp_tls_enabled: bool = True
+
+    # ── WhatsApp notifications ─────────────────────────────────────────────────
+    whatsapp_creds: Dict[str, Any] = {}
+
+    # ── MinIO object storage ───────────────────────────────────────────────────
+    minio_endpoint: str = ""
+    minio_access_key: str = ""
+    minio_secret_key: str = ""
+    minio_bucket: str = "novex"
+    minio_secure: bool = True
+
+    # ── Superset embedded dashboards ───────────────────────────────────────────
+    superset_internal_url: str = ""
+    superset_external_url: str = ""
+    superset_user: str = ""
+    superset_password: str = ""
+
+    # ── ThingsBoard (TAS/VA/VTS device platform) ──────────────────────────────
+    things_board_url: str = ""
+    things_board_username: str = ""
+    things_board_password: str = ""
+
+    # ── VTS / LPG integration endpoints ────────────────────────────────────────
+    vts_truck_status_url: str = ""
+    lpg_publish_url: str = ""
+    lpg_vts_auth_url: str = ""
+    lpg_vts_client_id: str = ""
+    lpg_vts_client_secret_key: str = ""
+    post_to_ims_url: str = ""
+    cris_interlock_disable_url: str = ""
+    aot_status_url: str = ""
+
+    # ── Server / log-summary SSH access ────────────────────────────────────────
+    novex_user: str = ""
+    novex_password: str = ""
+
 
 # Module-level singleton — imported everywhere as `urdhva_base.settings`
 settings = Settings()
