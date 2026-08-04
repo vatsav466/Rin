@@ -257,7 +257,16 @@ class AuthenticationManager:
                     return False, "Invalid Login Credentials", {}
         else:
             # If provided password not equals to db password, skip authentication
-            if urdhva_base.types.Secret(user_info["password"]).get_secret() != password:
+            try:
+                stored_password = urdhva_base.types.Secret(user_info["password"]).get_secret()
+            except Exception as decrypt_exc:
+                # Stored password hash can't be decrypted with the current
+                # password_salt (e.g. salt mismatch or corrupted row). Treat
+                # this as a failed login instead of crashing the request.
+                print(f"[login] Could not decrypt stored password for user '{username}': {repr(decrypt_exc)}")
+                await cls.update_login_failure_attempts(username)
+                return False, "Invalid Login Credentials", {}
+            if stored_password != password:
                 await cls.update_login_failure_attempts(username)
                 return False, "Invalid Login Credentials", {}
         return await cls.generate_auth_info(user_info, jwt_auth=jwt_auth)
