@@ -154,15 +154,20 @@ def _load_routers(app: FastAPI):
             continue
 
         module_name = filename[:-3]
-        filepath = os.path.join(cwd, filename)
 
         try:
-            spec = importlib.util.spec_from_file_location(module_name, filepath)
-            if spec is None or spec.loader is None:
-                continue
-            mod = importlib.util.module_from_spec(spec)
-            sys.modules[module_name] = mod
-            spec.loader.exec_module(mod)
+            # IMPORTANT: use the normal import machinery (importlib.import_module),
+            # not a hand-rolled spec_from_file_location + exec_module. Many of these
+            # files (e.g. hpcl_ceg_model.py) are ALSO imported normally by other
+            # action files via `from hpcl_ceg_model import *`. If we re-exec them
+            # here with a fresh module object, they run a second time, which
+            # re-registers SQLAlchemy tables against the same shared metadata
+            # ("Table 'x' is already defined for this MetaData instance") and can
+            # leave a half-initialized module in sys.modules for anyone who
+            # imports it afterwards — causing unrelated NameErrors elsewhere.
+            # importlib.import_module() respects sys.modules, so each file is
+            # only ever executed once no matter how many times it's referenced.
+            mod = importlib.import_module(module_name)
 
             # Include top-level router attribute
             symbol = getattr(mod, "router", None)
