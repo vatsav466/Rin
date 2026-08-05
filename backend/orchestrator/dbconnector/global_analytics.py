@@ -7806,7 +7806,7 @@ class GlobalAnalytics:
         
         for key, values in filter_map.items():
             if len(values) > 1:
-                _filters.append(f"a.{key} IN ({', '.join([f"'{v}'" for v in values])})")
+                _filters.append(f"a.{key} IN ({', '.join([f'{v}' for v in values])})")
             else:
                 _filters.append(f"a.{key} = '{values[0]}'")
 
