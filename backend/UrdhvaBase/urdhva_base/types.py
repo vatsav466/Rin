@@ -65,5 +65,5 @@ class Secret(str):
         try:
             return cryptography.fernet.Fernet(key).decrypt(self[5:].encode()).decode()
         except cryptography.fernet.InvalidToken:
-            # Fallback if decryption fails due to salt mismatch or direct plain text
+            # Fallback if decryption fails due to key mismatch
             return str(self)
