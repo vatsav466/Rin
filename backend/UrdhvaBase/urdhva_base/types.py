@@ -2,7 +2,6 @@ import base64
 import typing
 import pydantic
 import urdhva_base
-import pydantic.utils
 import cryptography.fernet
 from pydantic_core import core_schema
 from pydantic.json_schema import JsonSchemaValue
@@ -11,28 +10,27 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
 
-
 class Secret(str):
+    @classmethod
+    def __get_pydantic_json_schema__(cls, _core_schema: typing.Any, handler: typing.Any) -> JsonSchemaValue:
+        field_schema = handler(core_schema.str_schema())
+        field_schema.update({"type": "string", "writeOnly": True, "format": "password"})
+        return field_schema
 
     @classmethod
-    def __get_pydantic_json_schema__(cls, _core_schema, handler) -> JsonSchemaValue:
-        return handler(core_schema.str_schema())
+    def __get_pydantic_core_schema__(cls, source_type: typing.Any, handler: typing.Any) -> core_schema.CoreSchema:
+        return core_schema.no_info_after_validator_function(
+            cls.validate,
+            core_schema.str_schema(),
+        )
 
     @classmethod
-    def __modify_schema__(cls, field_schema: typing.Dict[str, typing.Any]) -> None:
-        pydantic.utils.update_not_none(field_schema, type='string', writeOnly=True, format='password')
-
-    @classmethod
-    def __get_validators__(cls) -> 'typing.CallableGenerator':
-        yield cls.validate
-
-    @classmethod
-    def get_key(cls, domain=None):
+    def get_key(cls, domain: typing.Optional[str] = None) -> bytes:
         hkdf = HKDF(
-            algorithm=hashes.SHA256(),  # You can swap this out for hashes.MD5()
+            algorithm=hashes.SHA256(),
             length=32,
-            salt=None,  # You may be able to remove this line but I'm unable to test
-            info=None,  # You may also be able to remove this line
+            salt=None,
+            info=None,
             backend=default_backend()
         )
         if not domain:
@@ -42,13 +40,13 @@ class Secret(str):
         return base64.urlsafe_b64encode(hkdf.derive(password.encode()))
 
     @classmethod
-    def validate(cls, value: str, domain: None) -> 'Secret':
+    def validate(cls, value: typing.Any) -> 'Secret':
         if isinstance(value, cls):
             return value
         if isinstance(value, str) and not value.startswith('enc#_'):
-            value = 'enc#_' + cryptography.fernet.Fernet(cls.get_key(urdhva_base.settings.password_salt)).encrypt(
-                value.encode()).decode()
-            # print("encrypted: ", value)
+            key = cls.get_key(getattr(urdhva_base.settings, 'password_salt', None))
+            encrypted = cryptography.fernet.Fernet(key).encrypt(value.encode()).decode()
+            value = 'enc#_' + encrypted
         return cls(value)
 
     def __repr__(self) -> str:
@@ -57,9 +55,15 @@ class Secret(str):
     def __eq__(self, other: typing.Any) -> bool:
         return isinstance(other, Secret) and self.get_secret() == other.get_secret()
 
-    def get_secret(self, domain=None) -> str:
-        # print(self.encode())
+    def get_secret(self, domain: typing.Optional[str] = None) -> str:
         if not self.startswith('enc#_'):
             return str(self)
-        return cryptography.fernet.Fernet(self.get_key(urdhva_base.settings.password_salt)).decrypt(
-            self[5:].encode()).decode()
+        
+        salt = domain or getattr(urdhva_base.settings, 'password_salt', None)
+        key = self.get_key(salt)
+        
+        try:
+            return cryptography.fernet.Fernet(key).decrypt(self[5:].encode()).decode()
+        except cryptography.fernet.InvalidToken:
+            # Fallback if decryption fails due to salt mismatch or direct plain text
+            return str(self)
