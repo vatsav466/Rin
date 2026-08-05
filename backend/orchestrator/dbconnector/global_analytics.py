@@ -7936,7 +7936,7 @@ class GlobalAnalytics:
         
         for key, values in filter_map.items():
             if len(values) > 1:
-                where_clauses.append(f" {key} IN ({', '.join([f"'{v}'" for v in values])})")
+                where_clauses.append(f" {key} IN ({', '.join([f'{v}' for v in values])})")
             else:
                 where_clauses.append(f" {key} = '{values[0]}'")
         
